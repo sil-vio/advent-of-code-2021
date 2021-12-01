@@ -1,5 +1,5 @@
 # Advent of Code 2021 🎄
-[![AoC2021](https://img.shields.io/badge/%20%F0%9F%8E%84adventofcode-2021-red)](https://adventofcode.com/2021) ![Language](https://img.shields.io/github/languages/top/cortinico/adventofcode-2021?color=blue&logo=rust)
+[![AoC2021](https://img.shields.io/badge/Advent--of--code-2021-green?style=for-the-badge&logo=rust)](https://adventofcode.com/2021)
 ```
 
                        .--------.
