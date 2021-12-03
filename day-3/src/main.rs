@@ -6,30 +6,25 @@ use std::path::Path;
 
 fn compute_part_two(lines: &Vec<String>) {
     let column_size = lines.iter().next().unwrap().len();
-    let one_most_user_bit = is_one_most_used_bit_at_position(&lines, 0);
-    let mut array_ox = filter_array(&lines, 0, if one_most_user_bit { '1' } else { '0' });
-    let mut array_co2 = filter_array(&lines, 0, if one_most_user_bit { '0' } else { '1' });
+    let ox_string_value = get_value_from_data(lines, column_size, true);
+    let co2_string_value = get_value_from_data(lines, column_size, false);
+    let oxygen_generator_rating = i32::from_str_radix(&ox_string_value, 2).unwrap();
+    let co2_scrubber_rating = i32::from_str_radix(&co2_string_value, 2).unwrap();
+    println!("oxygen_generator_rating {} , co2_scrubber_rating {},  
+        What is the life support rating of the submarine? {}", oxygen_generator_rating, co2_scrubber_rating, oxygen_generator_rating * co2_scrubber_rating);
+}
 
-    for i in 1..column_size {
-        let one_most_user_bit = is_one_most_used_bit_at_position(&array_ox, i);
+fn get_value_from_data(input_array: &Vec<String>, column_size: usize, is_ossigene: bool) -> String {
+    let mut array = input_array.clone();
+    for i in 0..column_size {
+        let one_most_user_bit = is_one_most_used_bit_at_position(&array, i);
         let most_user_bit = if one_most_user_bit { ('1', '0') } else { ('0', '1') };
-        array_ox = filter_array(&array_ox, i, most_user_bit.0);
-        if array_ox.len() == 1 {
+        array = filter_array(&array, i, if is_ossigene { most_user_bit.0 } else { most_user_bit.1 });
+        if array.len() == 1 {
             break;
         }
     }
-
-    for i in 1..column_size {
-        let one_most_user_bit = is_one_most_used_bit_at_position(&array_co2, i);
-        let most_user_bit = if one_most_user_bit { ('1', '0') } else { ('0', '1') };
-        array_co2 = filter_array(&array_co2, i, most_user_bit.1);
-        if array_co2.len() == 1 {
-            break;
-        }
-    }
-    let oxygen_generator_rating = i32::from_str_radix(&array_ox[0], 2).unwrap();
-    let co2_scrubber_rating = i32::from_str_radix(&array_co2[0], 2).unwrap();
-    println!("oxygen_generator_rating {} , co2_scrubber_rating {},  What is the life support rating of the submarine? {}", oxygen_generator_rating, co2_scrubber_rating, oxygen_generator_rating * co2_scrubber_rating);
+    array[0].to_string()
 }
 
 fn compute_part_one(lines: &Vec<String>) {
