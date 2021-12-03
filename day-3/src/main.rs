@@ -2,7 +2,6 @@ use std::fs::File;
 use std::io;
 use std::io::{BufRead, BufReader};
 use std::path::Path;
-use dat
 
 
 fn compute_part_two(lines: &Vec<String>, column_size: usize) {
