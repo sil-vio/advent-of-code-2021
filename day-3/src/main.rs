@@ -19,7 +19,7 @@ fn get_value_from_data(input_array: &Vec<String>, column_size: usize, is_ossigen
     for i in 0..column_size {
         let one_most_user_bit = is_one_most_used_bit_at_position(&array, i);
         let most_user_bit = if one_most_user_bit { ('1', '0') } else { ('0', '1') };
-        array = filter_array(&array, i, if is_ossigene { most_user_bit.0 } else { most_user_bit.1 });
+        array = filter_array_with_char_in_position(&array, i, if is_ossigene { most_user_bit.0 } else { most_user_bit.1 });
         if array.len() == 1 {
             break;
         }
@@ -29,20 +29,20 @@ fn get_value_from_data(input_array: &Vec<String>, column_size: usize, is_ossigen
 
 fn compute_part_one(lines: &Vec<String>) {
     let column_size = lines.iter().next().unwrap().len();
-    let mut gamma_rate_array = String::new();
-    let mut epsilon_rate_array = String::new();
+    let mut gamma_rate_string = String::new();
+    let mut epsilon_rate_string = String::new();
     for i in 0..column_size {
         let one_most_used_bit = is_one_most_used_bit_at_position(&lines, i);
         if one_most_used_bit {
-            gamma_rate_array.push('1');
-            epsilon_rate_array.push('0');
+            gamma_rate_string.push('1');
+            epsilon_rate_string.push('0');
         } else {
-            gamma_rate_array.push('0');
-            epsilon_rate_array.push('1');
+            gamma_rate_string.push('0');
+            epsilon_rate_string.push('1');
         }
     }
-    let gamma_rate = i32::from_str_radix(&gamma_rate_array, 2).unwrap();
-    let epsilon_rate = i32::from_str_radix(&epsilon_rate_array, 2).unwrap();
+    let gamma_rate = i32::from_str_radix(&gamma_rate_string, 2).unwrap();
+    let epsilon_rate = i32::from_str_radix(&epsilon_rate_string, 2).unwrap();
     println!("gamma rate {} , epsilon rate {} = power consumption {}", gamma_rate, epsilon_rate, gamma_rate * epsilon_rate);
 }
 
@@ -51,7 +51,7 @@ fn is_one_most_used_bit_at_position(lines: &Vec<String>, position: usize) -> boo
     one_count as f32>= lines.len() as f32/ 2f32
 }
 
-fn filter_array(input: &Vec<String>, position: usize, ch: char) -> Vec<String> {
+fn filter_array_with_char_in_position(input: &Vec<String>, position: usize, ch: char) -> Vec<String> {
     let mut result_array: Vec<String> = Vec::new();
     for i in 0..input.len() {
         if input[i].chars().collect::<Vec<char>>()[position] == ch {
