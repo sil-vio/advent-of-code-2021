@@ -1,14 +1,13 @@
-use core::num;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io;
-use std::io::{BufRead};
+use std::io::BufRead;
 use std::path::Path;
 
 fn main() {
-    let bingo_game = read_bingo_game("input").expect("Could not load lines");
-    bingo_game.play();
-    println!("bingoGame: {:?}", bingo_game);
+    let mut bingo_game = read_bingo_game("input").expect("Could not load lines");
+    let (first_board, last_board) = bingo_game.play();
+    println!("bingoGame: first_board {:?} last_board {:?}", first_board, last_board);
 
 }
 
@@ -37,9 +36,10 @@ fn read_bingo_game(filename: impl AsRef<Path>) -> io::Result<BingoGame> {
                     let board_row = value.split(' ').filter(|e| !e.is_empty()).map(|e|e.parse::<u16>().unwrap()).collect::<Vec<u16>>();
                     println!("{:?}", board_row);
                     for i in 0..board_row.len() {
-                        bingo_board.map.insert(board_row[i], BoardCoordinate{
+                        bingo_board.map.insert(board_row[i], CellStats{
                             x: i as u16,
-                            y: y
+                            y,
+                            marked: false,
                         });
                     }
                     y += 1;
@@ -59,16 +59,17 @@ where P: AsRef<Path>, {
 
 #[derive(Debug)]
 struct BingoBoard {
-    map: HashMap<u16, BoardCoordinate>,
+    map: HashMap<u16, CellStats>,
     row_hit: Vec<u16>,
     column_hit: Vec<u16>,
     winner: bool
 }
 
 #[derive(Debug)]
-struct BoardCoordinate {
+struct CellStats {
     x: u16,
     y: u16,
+    marked: bool,
 }
 
 #[derive(Debug)]
@@ -81,28 +82,61 @@ impl BingoBoard {
     fn new() -> BingoBoard {
         BingoBoard {
             map: HashMap::new(),
-            row_hit: Vec::new(),
-            column_hit: Vec::new(),
+            row_hit: vec![0,0,0,0,0],
+            column_hit: vec![0,0,0,0,0],
             winner: false
         }
     }
 
-    fn mark_number(&mut self, number:u16 ) -> bool {
-        if let Some(cordinate) = self.map.get(&number) {
-            self.row_hit[cordinate.x as usize] += self.row_hit[cordinate.x as usize];
+    fn mark_number(&mut self, number:u16 ) -> Option<u32> {
+        if let Some(coordinate) = self.map.get(&number) {
+            let cell_stats_marked = CellStats {x: coordinate.x, y: coordinate.y, marked: true};
+            self.row_hit[coordinate.x as usize] +=  1;
+            self.column_hit[coordinate.y as usize] +=  1;
+            if self.row_hit[coordinate.x as usize] == 5 || self.column_hit[coordinate.y as usize] == 5 {
+                self.map.insert(number, cell_stats_marked);
+                let mut sum = 0 as u16;
+                 for (value, cel_stats) in self.map.iter() {
+                    if !cel_stats.marked {
+                        sum += value;
+                    }
+                }
+                self.winner = true;
+                return Some(sum as u32 * number as u32);
+            } else {
+                self.map.insert(number, cell_stats_marked);
+            }
         }
-        true
+        return None;
     }
 }
 
 impl BingoGame {
-    fn play(&self) -> u16 {
+    fn play(&mut self) -> (u32, u32) {
+        let mut first_result = 0;
+        let mut last_result = 0;
+        let mut board_winner_counter = 0;
+        println!("Start extraction ...");
         for i in 0..self.number.len() {
+            println!{"{} ", self.number[i]};
             for ii in 0..self.boards.len() {
-                let var_name: Vec<BingoBoard> = AsMut::as_mut(&mut self.boards);
-                var_name[ii].mark_number(self.number[i]);
+                if !self.boards[ii].winner {
+                    if let Some(board_result) = self.boards[ii].mark_number(self.number[i]) {
+                        board_winner_counter += 1;
+                        println!("Bingo! We have a winner!");
+                        if first_result == 0 {
+                            first_result = board_result;
+                        } else {
+                            last_result = board_result;
+                        }
+
+                    }
+                }
+            }
+            if board_winner_counter == self.boards.len() {
+                break;                            
             }
         }
-        16u16
+        (first_result, last_result)
     }
 }
