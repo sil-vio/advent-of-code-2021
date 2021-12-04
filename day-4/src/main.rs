@@ -5,56 +5,10 @@ use std::io::BufRead;
 use std::path::Path;
 
 fn main() {
-    let mut bingo_game = read_bingo_game("input").expect("Could not load lines");
+    let mut bingo_game = BingoGame::new_from_file("input");
     let (first_board, last_board) = bingo_game.play();
-    println!("bingoGame: first_board {:?} last_board {:?}", first_board, last_board);
+    println!("Bingo result, first_board: {:?},  last_board: {:?}", first_board, last_board);
 
-}
-
-fn read_bingo_game(filename: impl AsRef<Path>) -> io::Result<BingoGame> {
-    let mut bingo_game = BingoGame{
-        boards: Vec::new(),
-        number: Vec::new(),
-    };
-    if let Ok(lines) = read_lines(filename) {
-        let mut bingo_board = BingoBoard::new();
-        let mut y: u16 = 0;
-        for line in lines {
-            if let Ok(value) = line {
-                if value.len() == 0 {
-                    println!("new board ");
-                    if bingo_board.map.len() > 0 {
-                        bingo_game.boards.push(bingo_board);
-                    }
-                    bingo_board = BingoBoard::new();
-                    y = 0;
-                } else if value.len() > 15 {
-                    // input data
-                    bingo_game.number = value.split(',').map(|e| e.parse::<u16>().unwrap()).collect::<Vec<u16>>();
-                } else {
-                    // board data
-                    let board_row = value.split(' ').filter(|e| !e.is_empty()).map(|e|e.parse::<u16>().unwrap()).collect::<Vec<u16>>();
-                    println!("{:?}", board_row);
-                    for i in 0..board_row.len() {
-                        bingo_board.map.insert(board_row[i], CellStats{
-                            x: i as u16,
-                            y,
-                            marked: false,
-                        });
-                    }
-                    y += 1;
-                }
-            }
-        }
-        bingo_game.boards.push(bingo_board);
-    }
-    Ok(bingo_game)
-}
-
-fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
-where P: AsRef<Path>, {
-    let file = File::open(filename)?;
-    Ok(io::BufReader::new(file).lines())
 }
 
 #[derive(Debug)]
@@ -112,6 +66,48 @@ impl BingoBoard {
 }
 
 impl BingoGame {
+
+    fn new_from_file(filename: impl AsRef<Path>) -> BingoGame {
+        let mut bingo_game = BingoGame{
+            boards: Vec::new(),
+            number: Vec::new(),
+        };
+        let file = File::open(filename);
+        let lines = io::BufReader::new(file.unwrap()).lines();
+        let mut bingo_board = BingoBoard::new();
+        let mut y: u16 = 0;
+        for line in lines {
+            if let Ok(value) = line {
+                if value.len() == 0 {
+                    println!("new board ");
+                    if bingo_board.map.len() > 0 {
+                        bingo_game.boards.push(bingo_board);
+                    }
+                    bingo_board = BingoBoard::new();
+                    y = 0;
+                } else if value.len() > 15 {
+                    // input data
+                    bingo_game.number = value.split(',').map(|e| e.parse::<u16>().unwrap()).collect::<Vec<u16>>();
+                } else {
+                    // board data
+                    let board_row = value.split(' ').filter(|e| !e.is_empty()).map(|e|e.parse::<u16>().unwrap()).collect::<Vec<u16>>();
+                    println!("{:?}", board_row);
+                    for i in 0..board_row.len() {
+                        bingo_board.map.insert(board_row[i], CellStats{
+                            x: i as u16,
+                            y,
+                            marked: false,
+                        });
+                    }
+                    y += 1;
+                }
+            }
+        }
+        bingo_game.boards.push(bingo_board);
+        bingo_game
+    }
+    
+
     fn play(&mut self) -> (u32, u32) {
         let mut first_result = 0;
         let mut last_result = 0;
