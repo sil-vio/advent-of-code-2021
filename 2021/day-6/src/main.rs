@@ -12,9 +12,8 @@ fn calculate_fish(total_day: u16) -> u64 {
         let zerovalue = counter[0];
         counter.rotate_left(1);
         counter[6] += zerovalue;
-        counter[8] = zerovalue;
     }
-    counter.iter().fold(0, |acc, x| acc+x)
+    counter.iter().sum()
 }
 
 fn main() {
@@ -25,12 +24,10 @@ fn main() {
 }
 
 fn lines_from_file(filename: impl AsRef<Path>) -> io::Result<Vec<u16>> {
-    let line = BufReader::new(File::open(filename)?)
+    Ok(BufReader::new(File::open(filename)?)
         .lines()
         .next()
-        .unwrap()
-        .unwrap();
-    Ok(line
+        .unwrap().unwrap()
         .split(',')
         .map(|e| e.parse::<u16>().unwrap())
         .collect::<Vec<u16>>())
