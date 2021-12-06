@@ -1,31 +1,18 @@
-use std::collections::HashMap;
 use std::fs::File;
 use std::io::{self, BufRead, BufReader};
 use std::path::Path;
 
 
 fn calculate_fish(total_day: u16) -> u64 {
-    let input = lines_from_file("input").unwrap();
-    let mut map: HashMap<u16, u16> = HashMap::new();
-
-    input.iter().for_each(|e| {
-        let value = map.entry(*e).or_insert(0);
-        *value += 1;
+    let mut counter = [0;9];
+    lines_from_file("input").unwrap().iter().for_each(|e| {
+        counter[*e as usize] += 1;
     });
-    let mut counter: Vec<u64> = vec![0;9];
-    for i in 0..=8 {
-        let entry= map.entry(i as u16).or_insert(0);
-        counter[i] = *entry as u64;
-    }
-   
     for _day in 1..=total_day {
-        let mut day_counter = vec![0;9];
-        for position in 0..8 {
-            day_counter[position] = counter[position + 1];
-        }
-        day_counter[6] += counter[0];
-        day_counter[8] = counter[0];
-        counter = day_counter.clone();
+        let zerovalue = counter[0];
+        counter.rotate_left(1);
+        counter[6] += zerovalue;
+        counter[8] = zerovalue;
     }
     counter.iter().fold(0, |acc, x| acc+x)
 }
