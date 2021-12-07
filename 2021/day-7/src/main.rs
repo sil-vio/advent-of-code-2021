@@ -9,17 +9,24 @@ fn median(numbers: &mut [i32]) -> i32 {
     numbers[mid]
 }
 
+
+fn average(numbers: &[i32]) -> f32 {
+    (numbers.iter().sum::<i32>() as f32) / numbers.len() as f32
+}
+
+fn summation(n: i32) -> i32 {
+    n * (n +1)/2
+}
+
 fn main() {
     let mut numbers = lines_from_file("input").unwrap();
     let median = median(&mut numbers);
-    println!("{:?}", median);
     let sum: i32 = numbers.iter().map(|e| (e - median).abs()).sum();
-    println!("{:?}", sum);
+    println!("part 1 median {:?}, sum of difference {:?}", median, sum);
 
-    let media = 463 as i32;
-        let sum: i32 = numbers.iter().map(|e| (e - media).abs()).sum();
-
-    println!("{:?}", sum);
+    let average = average(& numbers) as i32;
+    let sum: i32 = numbers.iter().map(|e| summation((e - average).abs())).sum();
+    println!("part 2 average {:?}, sum of difference {:?}", average, sum);
 }
 
 
