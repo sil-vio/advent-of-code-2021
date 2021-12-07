@@ -24,9 +24,13 @@ fn main() {
     let sum: i32 = numbers.iter().map(|e| (e - median).abs()).sum();
     println!("part 1 median {:?}, sum of difference {:?}", median, sum);
 
-    let average = average(& numbers) as i32;
-    let sum: i32 = numbers.iter().map(|e| summation((e - average).abs())).sum();
-    println!("part 2 average {:?}, sum of difference {:?}", average, sum);
+    let average = average(& numbers);
+    let floor_avarage = average.floor() as i32;
+    let ceil_avarage = average.ceil() as i32;
+    let sum_floor: i32 = numbers.iter().map(|e| summation((e - floor_avarage).abs())).sum();
+    let sum_ceil: i32 = numbers.iter().map(|e| summation((e - ceil_avarage).abs())).sum();
+
+    println!("part 2 average {:?}, sum of difference {:?}", average, sum_ceil.min(sum_floor));
 }
 
 
