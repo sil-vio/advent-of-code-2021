@@ -56,7 +56,6 @@ fn find_low_points(input: &Vec<Vec<u64>>) -> Vec<Point> {
                 }
             }
             if is_min == true {
-                println!(" found min in [{},{}] value {} ", y, x, input[y][x]);
                 low_point.push(Point {
                     y,
                     x,
@@ -71,7 +70,8 @@ fn find_low_points(input: &Vec<Vec<u64>>) -> Vec<Point> {
 fn part2(input: &Vec<Vec<u64>>, low_points: &Vec<Point>) -> u64 {
     let mut basins = Vec::new();
     for low_point in low_points {
-        let basin_point = calucalte_basin(input, &low_point.clone(), 0, 0, &HashSet::new());
+        let mut basin_point: HashSet<Point> = HashSet::new();
+        calculate_basin_points(input, &low_point.clone(), 0, 0, &mut basin_point);
         basins.push(basin_point.len() as u64);
     }
     basins.sort();
@@ -79,17 +79,16 @@ fn part2(input: &Vec<Vec<u64>>, low_points: &Vec<Point>) -> u64 {
     basins[0..3].iter().product()
 }
 
-fn calucalte_basin(
+fn calculate_basin_points(
     input: &Vec<Vec<u64>>,
     point: &Point,
     direction_x: i32,
     direction_y: i32,
-    basin_point: &HashSet<Point>,
-) -> HashSet<Point> {
+    basin_point: &mut HashSet<Point>,
+) {
     let max_x = input[0].len();
     let max_y = input.len();
-    let mut mybasin = basin_point.clone();
-    mybasin.insert(point.clone());
+    basin_point.insert(point.clone());
 
     if point.x > 0 && (direction_x == 0 || direction_x == -1) && (input[point.y][point.x - 1] != 9) {
 
@@ -99,7 +98,7 @@ fn calucalte_basin(
             value: input[point.y][point.x - 1],
         };
         if basin_point.get(&new_point) == None {
-            mybasin = calucalte_basin(input, &new_point, -1, 0, &mybasin);
+            calculate_basin_points(input, &new_point, -1, 0, basin_point);
         }
     }
     if point.x < max_x - 1 && (direction_x == 0 || direction_x == 1)  && (input[point.y][point.x + 1] != 9) {
@@ -109,7 +108,7 @@ fn calucalte_basin(
             value: input[point.y][point.x + 1],
         };
         if basin_point.get(&new_point) == None {
-            mybasin = calucalte_basin(input, &new_point, 1, 0, &mybasin);
+            calculate_basin_points(input, &new_point, 1, 0, basin_point);
         }
     }
     if point.y > 0  && (direction_y == 0 || direction_y == -1) &&  (input[point.y - 1][point.x] != 9) {
@@ -120,7 +119,7 @@ fn calucalte_basin(
         };
         if basin_point.get(&new_point) == None {
         
-            mybasin = calucalte_basin(input, &new_point, 0, -1, &mybasin);
+            calculate_basin_points(input, &new_point, 0, -1, basin_point);
         }
     }
     if point.y < max_y - 1 && (direction_y == 0 || direction_y == 1) && (input[point.y + 1][point.x] != 9) {
@@ -130,10 +129,9 @@ fn calucalte_basin(
             value: input[point.y + 1][point.x],
         };
         if basin_point.get(&new_point) == None {
-            mybasin = calucalte_basin(input, &new_point, 0, 1, &mybasin);
+            calculate_basin_points(input, &new_point, 0, 1, basin_point);
         }
     }
-    return mybasin.clone();
 }
 
 fn lines_from_file(filename: impl AsRef<Path>) -> io::Result<Vec<Vec<u64>>> {
