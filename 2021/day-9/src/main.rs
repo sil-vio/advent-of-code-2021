@@ -71,7 +71,7 @@ fn part2(input: &Vec<Vec<u64>>, low_points: &Vec<Point>) -> u64 {
     let mut basins = Vec::new();
     for low_point in low_points {
         let mut basin_point: HashSet<Point> = HashSet::new();
-        calculate_basin_points(input, &low_point.clone(), 0, 0, &mut basin_point);
+        calculate_basin_points(input, &low_point, 0, 0, &mut basin_point);
         basins.push(basin_point.len() as u64);
     }
     basins.sort();
