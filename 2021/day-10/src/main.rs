@@ -2,12 +2,15 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::io::{self, BufRead, BufReader};
 use std::path::Path;
+use std::time::Instant;
 
 fn main() {
+    let now = Instant::now();
     let lines = lines_from_file("input").unwrap();
     let result = part1(&lines);
     println!("part 1 : {}", result.0);
     println!("part 2 : {}", result.1);
+    println!("time to complete (ms): {}", now.elapsed().as_millis());
 }
 
 fn part1(lines: &Vec<Vec<char>>) -> (u64, u64) {
