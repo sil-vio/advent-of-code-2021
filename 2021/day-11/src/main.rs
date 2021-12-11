@@ -1,6 +1,7 @@
 use std::fs::File;
 use std::io::{self, BufRead, BufReader};
 use std::path::Path;
+use std::time::Instant;
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 struct Point {
@@ -11,17 +12,18 @@ struct Point {
 
 fn main() {
     let mut input = lines_from_file("input").unwrap();
+    let now = Instant::now();
     let (p1, p2) = part1(&mut input);
-    println!("part 1 result: {}, part2 result {} ", p1, p2 );
+    println!(
+        "part 1 result: {}, part2 result {} in ns {}",
+        p1,
+        p2,
+        now.elapsed().as_nanos()
+    );
 }
 
 fn part1(input: &mut Vec<Vec<u64>>) -> (u64, usize) {
     let mut flash_counter = 0;
-    let mut first_step_all_flash = 0;
-    println!("\n day 0");
-    for y in 0..input.len() {
-        println!("{:?}", input[y]);
-    }
     let mut step = 1;
     loop {
         for y in 0..input.len() {
@@ -42,19 +44,21 @@ fn part1(input: &mut Vec<Vec<u64>>) -> (u64, usize) {
                 }
             }
         }
-        if first_step_all_flash == 0 {
-            let mut day_sum = 0;
-            for y in 0..input.len() {
-                day_sum = day_sum + input[y].iter().sum::<u64>();
+        let mut all_zero = true;
+        'outer: for y in 0..input.len() {
+            for x in 0..input[y].len() {
+                if input[y][x] != 0 {
+                    all_zero = false;
+                    break 'outer;
+                }
             }
-            if day_sum == 0 {
-                first_step_all_flash = step;
-                break
-            }
+        }
+        if all_zero {
+            break;
         }
         step += 1;
     }
-    (flash_counter, first_step_all_flash)
+    (flash_counter, step)
 }
 
 fn flash_point(input: &mut Vec<Vec<u64>>, x: usize, y: usize) {
