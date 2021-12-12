@@ -84,15 +84,15 @@ fn main() {
 fn generate_path(input: Vec<Line>, allow_one_duplicate: bool) -> u64 {
     let mut counter = 0;
     let mut i = 0;
-    let mut lista_parole: Vec<Vec<Line>> = Vec::new();
-    lista_parole.push(vec![Line{a: Cave{name: "-->".to_string(), small: false, start: false, end: false }, b: Cave{name: "start".to_string(), small: false, start: true, end: false}, start: true, end: false}]);
+    let mut path_list: Vec<Vec<Line>> = Vec::new();
+    path_list.push(vec![Line{a: Cave{name: "-->".to_string(), small: false, start: false, end: false }, b: Cave{name: "start".to_string(), small: false, start: true, end: false}, start: true, end: false}]);
     loop {
-        if !lista_parole[i].last().unwrap().end {
-            let next_steps: Vec<Line> = get_next_steps(&input,  &lista_parole[i], allow_one_duplicate);
+        if !path_list[i].last().unwrap().end {
+            let next_steps: Vec<Line> = get_next_steps(&input,  &path_list[i], allow_one_duplicate);
              for next_step in next_steps {
-                let mut new_line = lista_parole[i].clone();
+                let mut new_line = path_list[i].clone();
                 new_line.push(next_step.clone());
-                lista_parole.push(new_line.clone());
+                path_list.push(new_line.clone());
             }
         } else {
             //let final_path = lista_parole[i].iter().map(|e| e.b.name.to_string()).collect::<Vec<String>>().join(",");
@@ -100,7 +100,7 @@ fn generate_path(input: Vec<Line>, allow_one_duplicate: bool) -> u64 {
             counter +=1;
         }
         i += 1;
-        if lista_parole.len() == i {
+        if path_list.len() == i {
             break;
         }
     }
@@ -108,22 +108,11 @@ fn generate_path(input: Vec<Line>, allow_one_duplicate: bool) -> u64 {
 }
 
 fn get_next_steps(input: &Vec<Line>, partial_list: &Vec<Line>, allow_one_duplicate: bool) -> Vec<Line> {
-    let mut cave_set: HashSet<Cave> = HashSet::new(); 
-    partial_list.iter().for_each(|entry | {
-        cave_set.insert(entry.a.clone());
-        cave_set.insert(entry.b.clone());
-    });
     let mut duplicate = false;
-    let small_caves_in_path = partial_list
-        .iter()
-        .map(|e| e.b.clone())
+    let small_caves = partial_list.iter().map(|e| e.b.clone())
         .filter(|e| e.small)
         .collect::<Vec<Cave>>();
-
-
-    if (1..small_caves_in_path.len())
-        .any(|i| small_caves_in_path[i..].contains(&small_caves_in_path[i - 1]))
-    {
+    if (1..small_caves.len()).any(|i| small_caves[i..].contains(&small_caves[i - 1])){
         // println!("found duplicate in {:?} ", small_caves_in_path);
         duplicate = true;
     }
@@ -132,13 +121,13 @@ fn get_next_steps(input: &Vec<Line>, partial_list: &Vec<Line>, allow_one_duplica
          return input
              .iter()
              .filter(|line| line.a.name == partial_list.last().unwrap().b.name.to_string())
-             .filter(|line| !line.b.small || !duplicate || !cave_set.contains(&line.b))
+             .filter(|line| !line.b.small || !duplicate || !small_caves.contains(&line.b))
              .map(|line| line.to_owned())
              .collect();
     }
     return input.iter()
         .filter(|line | line.a.name == partial_list.last().unwrap().b.name.to_string())
-        .filter(|line| !line.b.small || (line.b.small && !cave_set.contains(&line.b)))
+        .filter(|line| !line.b.small || (line.b.small && !small_caves.contains(&line.b)))
         .map(|line | line.to_owned()).collect();
 }
 
