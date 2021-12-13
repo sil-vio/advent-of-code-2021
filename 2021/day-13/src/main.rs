@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::fs::File;
 use std::io::{self, BufRead};
 use std::num::ParseIntError;
@@ -7,7 +8,7 @@ use std::time::Instant;
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 struct Fold {
-    x: bool,
+    horizzontal: bool,
     value: usize,
 }
 
@@ -18,7 +19,7 @@ impl FromStr for Fold {
         let s_replaced = s.replace("fold along ", "");
         let (x, value) = s_replaced.split_once('=').unwrap_or(("a", "a"));
         Ok(Fold {
-            x: x == "x",
+            horizzontal: x == "x",
             value: value.parse::<usize>()?,
         })
     }
@@ -46,13 +47,19 @@ fn main() {
     let points = get_points_from_file("input").unwrap();
     let folds = get_folds_from_file("input").unwrap();
     let now = Instant::now();
-    part1(&points, &folds);
-    println!("Day 13 end in ns {}", now.elapsed().as_nanos());
+    solution_one(&points, &folds);
+    println!("Day 13 A end in ns {}", now.elapsed().as_nanos());
+    let now2 = Instant::now();
+    solution_two(&points, &folds);
+    println!("Day 13 B end in ns {}", now2.elapsed().as_nanos());
+
 }
 
-fn part1(points: &Vec<Point>, folds: &Vec<Fold>) {
-    let row_len = folds.iter().filter(|f| f.x).map(|p| p.value).max();
-    let row_numbers = folds.iter().filter(|f| !f.x).map(|p| p.value).max();
+fn solution_one(points: &Vec<Point>, folds: &Vec<Fold>) {
+    println!("start dots #: {}", points.len());
+
+    let row_len = folds.iter().filter(|f| f.horizzontal).map(|p| p.value).max();
+    let row_numbers = folds.iter().filter(|f| !f.horizzontal).map(|p| p.value).max();
     println!("row_len {}", row_len.unwrap() * 2 + 1);
     println!("row_numbers {}", row_numbers.unwrap() * 2 + 1);
     let mut rows = vec![vec![0; row_len.unwrap() * 2 + 1]; row_numbers.unwrap() * 2 + 1];
@@ -62,7 +69,7 @@ fn part1(points: &Vec<Point>, folds: &Vec<Fold>) {
     // print_rows(&rows);
     for fold in folds {
         println!("execute fold : {:?}", &fold);
-        if fold.x {
+        if fold.horizzontal {
             let mut new_rows = vec![vec![0; rows[0].len() / 2]; rows.len()];
             for y in 0..new_rows.len() {
                 for x in 0..new_rows[y].len() {
@@ -90,6 +97,47 @@ fn part1(points: &Vec<Point>, folds: &Vec<Fold>) {
         println!("dots #: {}", counts_dots(&rows));
     }
     print_rows(&rows);
+}
+
+
+fn solution_two(points: &Vec<Point>, folds: &Vec<Fold>) {
+    println!("\n part 2 ");
+    let mut set: HashSet<Point> = points.iter().map(|p| p.clone()).collect();
+    println!("start dots #: {}", set.len());
+    for fold in folds {
+        println!("execute fold : {:?}", &fold);
+
+        if fold.horizzontal {
+            let new_set: HashSet<Point> = set.iter()
+                .filter(|p| p.x > fold.value)
+                .map(|p| Point{x: (fold.value*2 ) - p.x, y: p.y})
+                .collect();
+            set = set.union(&new_set).filter(|p| p.x < fold.value).map(|p| p.clone()).collect();
+        } else {
+            let new_set: HashSet<Point> = set.iter()
+                .filter(|p| p.y > fold.value)
+                .map(|p| Point{x: p.x, y: (fold.value *2) - p.y})
+                .collect();
+            set = set.union(&new_set).filter(|p| p.y < fold.value).map(|p| p.clone()).collect();
+
+        }
+        println!("dots #: {}", set.len());
+    }
+    let max_x = set.iter().map(|p| p.x).max().unwrap();
+    let max_y = set.iter().map(|p| p.y).max().unwrap();
+    for y in 0..=max_y {
+        let mut row = String::new();
+        for x in 0..=max_x {
+            let p = Point{x,y};
+            match set.get(&p) {
+                Some(_) => row.push('#'),
+                None => row.push('.')
+            }
+        }
+        println!("{}", row);
+    }
+
+    
 }
 
 fn print_rows(rows: &Vec<Vec<i32>>) {
@@ -145,6 +193,8 @@ mod tests {
         let folds = get_folds_from_file("test_input").unwrap();
         assert_eq!(points.len(), 18);
         assert_eq!(folds.len(), 2);
-        part1(&points, &folds);
+        solution_one(&points, &folds);
+        solution_two(&points, &folds);
+
     }
 }
