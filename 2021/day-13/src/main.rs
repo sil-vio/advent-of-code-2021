@@ -1,5 +1,5 @@
 use std::fs::File;
-use std::io::{self, BufRead, BufReader};
+use std::io::{self, BufRead};
 use std::num::ParseIntError;
 use std::path::Path;
 use std::str::FromStr;
@@ -43,22 +43,19 @@ impl FromStr for Point {
 }
 
 fn main() {
-    let mut points = get_points_from_file("input").unwrap();
-    let mut folds = get_folds_from_file("input").unwrap();
+    let points = get_points_from_file("input").unwrap();
+    let folds = get_folds_from_file("input").unwrap();
     let now = Instant::now();
-    let p1 = part1(&points, &folds);
-    let p2 = 0;
-    println!(
-        "part 1 result: {}, part2 result {} in ns {}",
-        p1,
-        p2,
-        now.elapsed().as_nanos()
-    );
+    part1(&points, &folds);
+    println!("Day 13 end in ns {}", now.elapsed().as_nanos());
 }
 
-fn part1(points: &Vec<Point>, folds: &Vec<Fold>) -> usize {
-    let mut counter = 0;
-    let mut rows = vec![vec![0; 1311]; 895];
+fn part1(points: &Vec<Point>, folds: &Vec<Fold>) {
+    let row_len = folds.iter().filter(|f| f.x).map(|p| p.value).max();
+    let row_numbers = folds.iter().filter(|f| !f.x).map(|p| p.value).max();
+    println!("row_len {}", row_len.unwrap() * 2 + 1);
+    println!("row_numbers {}", row_numbers.unwrap() * 2 + 1);
+    let mut rows = vec![vec![0; row_len.unwrap() * 2 + 1]; row_numbers.unwrap() * 2 + 1];
     for point in points {
         rows[point.y][point.x] = 1;
     }
@@ -66,18 +63,26 @@ fn part1(points: &Vec<Point>, folds: &Vec<Fold>) -> usize {
     for fold in folds {
         println!("execute fold : {:?}", &fold);
         if fold.x {
-            let mut new_rows = vec![vec![0; rows[0].len()/2]; rows.len()];
+            let mut new_rows = vec![vec![0; rows[0].len() / 2]; rows.len()];
             for y in 0..new_rows.len() {
                 for x in 0..new_rows[y].len() {
-                    new_rows[y][x] = if (rows[y][x] + rows[y][(rows[y].len() - 1) - x]) > 0 { 1 } else { 0 };
+                    new_rows[y][x] = if (rows[y][x] + rows[y][(rows[y].len() - 1) - x]) > 0 {
+                        1
+                    } else {
+                        0
+                    };
                 }
             }
             rows = new_rows;
         } else {
-            let mut new_rows = vec![vec![0; rows[0].len()]; rows.len()/2];
+            let mut new_rows = vec![vec![0; rows[0].len()]; rows.len() / 2];
             for y in 0..new_rows.len() {
                 for x in 0..new_rows[y].len() {
-                    new_rows[y][x] = if (rows[y][x] + rows[(rows.len() - 1) - y][x]) > 0 { 1 } else { 0 };
+                    new_rows[y][x] = if (rows[y][x] + rows[(rows.len() - 1) - y][x]) > 0 {
+                        1
+                    } else {
+                        0
+                    };
                 }
             }
             rows = new_rows;
@@ -85,21 +90,20 @@ fn part1(points: &Vec<Point>, folds: &Vec<Fold>) -> usize {
         println!("dots #: {}", counts_dots(&rows));
     }
     print_rows(&rows);
-    counter
 }
 
 fn print_rows(rows: &Vec<Vec<i32>>) {
     for row in rows {
         print!("\n");
         for cell in row {
-            print!("{}", if *cell != 1i32 { '.' } else { '#'});
+            print!("{}", if *cell != 1i32 { '.' } else { '#' });
         }
     }
 }
 
 fn counts_dots(rows: &Vec<Vec<i32>>) -> usize {
     let mut counter = 0;
-     for row in rows {
+    for row in rows {
         for cell in row {
             if *cell > 0 {
                 counter += 1;
@@ -141,6 +145,6 @@ mod tests {
         let folds = get_folds_from_file("test_input").unwrap();
         assert_eq!(points.len(), 18);
         assert_eq!(folds.len(), 2);
-        assert_eq!(part1(&points, &folds), 17);
+        part1(&points, &folds);
     }
 }
