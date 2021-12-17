@@ -67,6 +67,7 @@ fn calculate_max_height_total_hit(target: &Target) -> (i64, usize) {
     let start_point = (0, 0);
     let mut max_height = 0;
     let mut hit_counter = 0;
+    let mut miss_counter = 0;
     for vel_x in 3..=target.x_max {
         for vel_y in target.y_min..=-target.y_min {
             let (hit, trajectory_max_height) =
@@ -74,9 +75,12 @@ fn calculate_max_height_total_hit(target: &Target) -> (i64, usize) {
             if hit {
                 hit_counter += 1;
                 max_height = max_height.max(trajectory_max_height);
+            } else {
+                miss_counter += 1;
             }
         }
     }
+    println!(" hit #: {}, miss #: {}", hit_counter, miss_counter);
     (max_height, hit_counter)
 }
 
